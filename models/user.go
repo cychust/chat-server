@@ -6,21 +6,38 @@ import (
 )
 
 type User struct {
-	Id   string `json:"id" orm:"pk"`
-	Name string `json:"name" orm:"size(50)"`
-	Age  int    `json:"age"`
-	Sex  int    `json:"sex"`
+	Id    string `json:"id" orm:"column(id);pk"`
+	Name  string `json:"name" orm:"size(50)"`
+	Age   int    `json:"age"`
+	Sex   int    `json:"sex"`
+	Phone string `json:"phone"`
 }
 
-func init() {
-}
-func AddUser(u *User) error {
+func AddUser(u *User) (err error) {
 	o := orm.NewOrm()
-	_, err := o.Insert(u)
+
+	o.Begin()
+	defer func() {
+		if err != nil {
+			_ = o.Rollback()
+			return
+		}
+		_ = o.Commit()
+	}()
+
+	count, err := o.QueryTable(new(User)).Filter("phone__in", u.Phone).Count()
 	if err != nil {
-		fmt.Printf("%v", err)
+		return err
 	}
-	return err
+	if count > 0 {
+		return fmt.Errorf("err")
+	}
+	_, err = o.Insert(u)
+	if err != nil {
+		fmt.Printf("sss%v\n", err)
+		return err
+	}
+	return nil
 }
 
 func GetUserById(uuid string) (user User, err error) {
@@ -47,4 +64,27 @@ func GetAllUsers() ([]User, error) {
 		return nil, err
 	}
 	return users, nil
+}
+
+func ModifyUserById(uuid string, user User) (err error) {
+	o := orm.NewOrm()
+	o.Begin()
+	defer func() {
+		if err != nil {
+			o.Rollback()
+			return
+		}
+		o.Commit()
+	}()
+	user.Id = uuid
+	queryUser := User{
+		Id: uuid,
+	}
+	if err = o.Read(&queryUser); err != nil {
+		return err
+	}
+	if _, err = o.Update(&user); err != nil {
+		return err
+	}
+	return nil
 }

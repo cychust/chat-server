@@ -6,6 +6,17 @@ import (
 )
 
 func InitWebRouter() {
-	beego.Router("/user", &controller.UserController{}, "GET:GetAllUser")
+	InitUserRouter()
+}
+
+func InitUserRouter() {
+	beego.Router("/user/:id", &controller.UserController{}, "GET:FindUserById")
+	beego.Router("/user/:id", &controller.UserController{}, "PATCH:ModifyUserById")
+	beego.Router("/user", &controller.UserController{}, "GET:GetAllUsers")
 	beego.Router("/user", &controller.UserController{}, "POST:AddUser")
+	beego.Router("/user", &controller.UserController{}, "DELETE:DeleteAllUsers")
+}
+
+func InitRelationRouter() {
+	// beego.Router("")
 }
