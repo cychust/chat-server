@@ -7,6 +7,7 @@ import (
 
 func InitWebRouter() {
 	InitUserRouter()
+	InitRelationRouter()
 }
 
 func InitUserRouter() {
@@ -19,4 +20,7 @@ func InitUserRouter() {
 
 func InitRelationRouter() {
 	// beego.Router("")
+	beego.Router("/user/addFriend/:id", &controller.RelationController{}, "POST:AddFriend")
+	beego.Router("/user/deleteFriend/:id", &controller.RelationController{}, "POST:DeleteFriend")
+	beego.Router("/user/isFriend/:id", &controller.RelationController{}, "POST:IsFriend")
 }
